@@ -1,7 +1,6 @@
 import os
 import time
 from datetime import datetime
-from pprint import pprint
 
 import requests
 import telegram
@@ -45,5 +44,5 @@ if __name__ == "__main__":
         except requests.ReadTimeout as err:
             print(err)
         except requests.ConnectionError as err:
-            pprint(err)
+            print(err)
             time.sleep(30)
