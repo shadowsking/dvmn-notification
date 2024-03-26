@@ -1,11 +1,14 @@
 import argparse
-import os
 import time
 from datetime import datetime
 
 import requests
 import telegram
-from dotenv import load_dotenv
+
+import settings
+from logger import get_logger
+
+logger = get_logger("telegram_logger")
 
 
 def get_notification(token, timestamp, timeout=None):
@@ -20,8 +23,6 @@ def get_notification(token, timestamp, timeout=None):
 
 
 if __name__ == "__main__":
-    load_dotenv()
-
     parser = argparse.ArgumentParser(
         description="Telegram bot for notifications about tasks"
     )
@@ -34,12 +35,14 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    bot = telegram.Bot(token=os.environ["TELEGRAM_TOKEN"])
+    bot = telegram.Bot(token=settings.TELEGRAM_TOKEN)
+    logger.info("Бот запущен")
+
     timestamp = datetime.now().timestamp()
     while True:
         try:
             notification = get_notification(
-                os.environ["DVMN_TOKEN"], timestamp, timeout=args.timeout
+                settings.DVMN_TOKEN, timestamp, timeout=args.timeout
             )
             if notification["status"] == "timeout":
                 timestamp = notification["timestamp_to_request"]
@@ -54,12 +57,12 @@ if __name__ == "__main__":
                     text += "\nМожно приступать к следующему уроку!"
 
                 bot.send_message(
-                    chat_id=os.environ["TELEGRAM_CHAT_ID"],
+                    chat_id=settings.TELEGRAM_CHAT_ID,
                     text=text,
                     parse_mode="Markdown",
                 )
         except requests.ReadTimeout as err:
             continue
         except requests.ConnectionError as err:
-            print(err)
+            logger.exception(f"Бот упал с ошибкой: {err}")
             time.sleep(30)
