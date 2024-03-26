@@ -1,14 +1,16 @@
 import argparse
+import logging
+import os
 import time
 from datetime import datetime
 
+import dotenv
 import requests
 import telegram
 
-import settings
-from logger import get_logger
+from handlers import TelegramLogsHandler
 
-logger = get_logger("telegram_logger")
+logger = logging.getLogger("telegram_logger")
 
 
 def get_notification(token, timestamp, timeout=None):
@@ -23,6 +25,14 @@ def get_notification(token, timestamp, timeout=None):
 
 
 if __name__ == "__main__":
+    dotenv.load_dotenv()
+    logger.setLevel(logging.WARNING)
+    handler = TelegramLogsHandler(
+        os.environ["TELEGRAM_LOGGER_TOKEN"],
+        os.environ["TELEGRAM_CHAT_ID"]
+    )
+    logger.addHandler(handler)
+
     parser = argparse.ArgumentParser(
         description="Telegram bot for notifications about tasks"
     )
@@ -35,14 +45,14 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    bot = telegram.Bot(token=settings.TELEGRAM_TOKEN)
+    bot = telegram.Bot(token=os.environ["TELEGRAM_TOKEN"])
     logger.info("Бот запущен")
 
     timestamp = datetime.now().timestamp()
     while True:
         try:
             notification = get_notification(
-                settings.DVMN_TOKEN, timestamp, timeout=args.timeout
+                os.environ["DVMN_TOKEN"], timestamp, timeout=args.timeout
             )
             if notification["status"] == "timeout":
                 timestamp = notification["timestamp_to_request"]
@@ -57,7 +67,7 @@ if __name__ == "__main__":
                     text += "\nМожно приступать к следующему уроку!"
 
                 bot.send_message(
-                    chat_id=settings.TELEGRAM_CHAT_ID,
+                    chat_id=os.environ["TELEGRAM_CHAT_ID"],
                     text=text,
                     parse_mode="Markdown",
                 )
