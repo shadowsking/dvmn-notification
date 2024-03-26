@@ -64,5 +64,7 @@ if __name__ == "__main__":
         except requests.ReadTimeout as err:
             continue
         except requests.ConnectionError as err:
-            logger.exception(f"Бот упал с ошибкой: {err}")
+            logger.exception(err)
             time.sleep(30)
+        except Exception as ex:
+            raise logger.exception(f"Бот упал с ошибкой: {ex}")
