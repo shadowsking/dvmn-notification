@@ -23,6 +23,7 @@ pip install -r requirements.txt
 Создайте '.env' файл и установите следующие аргументы:
 - DVMN_TOKEN
 - TELEGRAM_TOKEN
+- TELEGRAM_LOGGER_TOKEN
 - TELEGRAM_CHAT_ID
 
 
